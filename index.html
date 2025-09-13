@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrepreneurial Readiness Chatbot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Entrepreneurial Readiness Assessment</h1>
+            <p class="subtitle">Rate entrepreneurial readiness scenarios and help build a valuable dataset!</p>
+        </header>
+
+        <main>
+            <div class="chatbot-section">
+                <div class="chat-container">
+                    <div id="chat-messages" class="chat-messages">
+                        <div class="bot-message welcome-message">
+                            <div class="message-content">
+                                <h3>Welcome to the Entrepreneurial Readiness Assessment!</h3>
+                                <p>I'm your entrepreneurial readiness assistant! I can ask you thoughtful questions to help you explore your readiness for entrepreneurship, or generate realistic business scenarios for you to rate and analyze.</p>
+                                <p><strong>Two ways to interact:</strong></p>
+                                <p>💬 <strong>Chat with me:</strong> Share your thoughts, concerns, or questions about entrepreneurship and I'll ask you personalized questions to help you reflect on your readiness</p>
+                                <p>📊 <strong>Rate scenarios:</strong> Click the button below or type "scenario" to get business scenarios that you can rate from 0-10 for entrepreneurial readiness</p>
+                                <button id="start-btn" class="btn btn-primary">Start First Scenario</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="rating-panel" class="rating-panel" style="display: none;">
+                        <div class="rating-content">
+                            <p>Based on the scenario above, how would you rate this person's entrepreneurial readiness?</p>
+                            <div class="rating-scale">
+                                <label>Entrepreneurial Readiness Score (0-10):</label>
+                                <input type="range" id="readiness-score" min="0" max="10" value="5" step="1">
+                                <span id="score-display">5</span>
+                            </div>
+                            <div class="rating-buttons">
+                                <button id="submit-rating" class="btn btn-success">Submit Rating</button>
+                                <button id="skip-scenario" class="btn btn-secondary">Skip Scenario</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-area">
+                        <div class="input-group">
+                            <input type="text" id="user-message" placeholder="Share your thoughts about entrepreneurship or type 'scenario' for a business scenario..." class="form-control">
+                            <button id="send-message" class="btn btn-primary">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="stats-panel">
+                    <h3>📊 Session Stats</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">Scenarios Completed:</span>
+                        <span id="completed-count" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Scenario Types Seen:</span>
+                        <span id="types-count" class="stat-value">0</span>
+                    </div>
+                </div>
+
+                <div class="controls-panel">
+                    <h3>🎮 Controls</h3>
+                    <button id="new-scenario" class="btn btn-primary btn-block">Generate New Scenario</button>
+                    <button id="export-data" class="btn btn-warning btn-block">Export Data to Hugging Face</button>
+                </div>
+                
+                <div class="dataset-panel">
+                    <h3>📊 Dataset</h3>
+                    <p>View the collected data:</p>
+                    <a href="https://huggingface.co/datasets/King-8/entrepreneur-chatbot-data" target="_blank" class="btn btn-info btn-block">View Dataset on Hugging Face</a>
+                </div>
+
+                <div class="info-panel">
+                    <h3>📋 What is Entrepreneurial Readiness?</h3>
+                    <p><strong>Entrepreneurial readiness</strong> is how prepared someone is to successfully start and run a business. Consider factors like:</p>
+                    <ul>
+                        <li>Financial stability and resources</li>
+                        <li>Risk tolerance and confidence</li>
+                        <li>Business skills and experience</li>
+                        <li>Personal circumstances</li>
+                    </ul>
+                </div>
+                
+                <div class="columns-panel">
+                    <h3>📊 Data Columns</h3>
+                    <div class="column-definitions">
+                        <div class="column-item">
+                            <strong>Financial:</strong> savings, income, expenses, entertainment, assets
+                        </div>
+                        <div class="column-item">
+                            <strong>Personal:</strong> age, dependents (people relying on them)
+                        </div>
+                        <div class="column-item">
+                            <strong>Skills:</strong> sales skills, confidence (both 0-10)
+                        </div>
+                        <div class="column-item">
+                            <strong>Business:</strong> risk level, difficulty of business idea (both 0-10)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="status-bar">
+                <span id="status-message">Ready to start assessment</span>
+                <div class="loading" id="loading" style="display: none;">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
