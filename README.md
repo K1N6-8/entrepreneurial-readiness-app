@@ -69,5 +69,5 @@ Each row includes:
 ## 🌟 Acknowledgments
 
 - Hugging Face team for open-source ML tools  
-- Coding in Color / Mayor's Youth at Work Internship  
+- Coding in Color Internship  
 - ChatGPT for technical support and encouragement 💬✨
