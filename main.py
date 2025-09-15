@@ -279,11 +279,10 @@ def submit_rating():
 
 @app.route('/export_data', methods=['GET'])
 def export_data():
-    """Export all chat data to a single CSV and upload to Hugging Face"""
+    """Export all chat data to a single CSV and upload to Hugging Face (append mode)"""
     if not chat_data:
         return jsonify({"status": "error", "message": "No data to export"})
 
-    # Create CSV content with cleaned column names
     fieldnames = [
         'savings_amount', 'monthly_income', 'monthly_expenses',
         'monthly_entertainment', 'sales_skills', 'risk_level', 'age',
@@ -291,73 +290,68 @@ def export_data():
         'entrepreneurial_readiness'
     ]
 
-    output = io.StringIO()
-    writer = csv.DictWriter(output, fieldnames=fieldnames)
-    writer.writeheader()
+    new_df = pd.DataFrame([{
+        'savings_amount': row.get('savings_amount', ''),
+        'monthly_income': row.get('monthly_income', ''),
+        'monthly_expenses': row.get('monthly_expenses', ''),
+        'monthly_entertainment': row.get('monthly_entertainment', ''),
+        'sales_skills': row.get('sales_skills', ''),
+        'risk_level': row.get('risk_level', ''),
+        'age': row.get('age', ''),
+        'dependents': row.get('dependents', ''),
+        'assets': row.get('assets', ''),
+        'confidence': row.get('confidence', ''),
+        'difficulty_of_business_idea': row.get('difficulty', ''),
+        'entrepreneurial_readiness': row.get('entrepreneurial_readiness_score', '')
+    } for row in chat_data])
 
-    for row in chat_data:
-        writer.writerow({
-            'savings_amount':
-            row.get('savings_amount', ''),
-            'monthly_income':
-            row.get('monthly_income', ''),
-            'monthly_expenses':
-            row.get('monthly_expenses', ''),
-            'monthly_entertainment':
-            row.get('monthly_entertainment', ''),
-            'sales_skills':
-            row.get('sales_skills', ''),
-            'risk_level':
-            row.get('risk_level', ''),
-            'age':
-            row.get('age', ''),
-            'dependents':
-            row.get('dependents', ''),
-            'assets':
-            row.get('assets', ''),
-            'confidence':
-            row.get('confidence', ''),
-            'difficulty_of_business_idea':
-            row.get('difficulty', ''),
-            'entrepreneurial_readiness':
-            row.get('entrepreneurial_readiness_score', '')
-        })
-
-    # Save to a single CSV file
+    # Try downloading existing file
     csv_filename = 'entrepreneur_data.csv'
-    with open(csv_filename, 'w', newline='') as f:
-        f.write(output.getvalue())
+    try:
+        hf_token = os.getenv('HUGGINGFACE_TOKEN')
+        repo_id = "King-8/entrepreneur-chatbot-data"
+        hf_api = HfApi(token=hf_token)
+
+        # Download current file
+        existing_file = hf_api.download_repo_file(
+            repo_id=repo_id,
+            path_in_repo=csv_filename,
+            repo_type="dataset",
+            token=hf_token
+        )
+        existing_df = pd.read_csv(existing_file)
+        combined_df = pd.concat([existing_df, new_df], ignore_index=True)
+    except Exception as e:
+        # If download fails, just use new data
+        combined_df = new_df
+
+    # Save combined data
+    combined_df.to_csv(csv_filename, index=False)
 
     # Upload to Hugging Face
     hf_status = "not_attempted"
     hf_message = ""
     try:
-        hf_token = os.getenv('HUGGINGFACE_TOKEN')
-        if hf_token:
-            api = HfApi(token=hf_token)
-            repo_id = "King-8/entrepreneur-chatbot-data"
-            api.upload_file(
-                path_or_fileobj=csv_filename,
-                path_in_repo=
-                "entrepreneur_data.csv",  # fixed path = overwrite, no duplicates
-                repo_id=repo_id,
-                repo_type="dataset",
-                commit_message=f"Updated dataset with {len(chat_data)} rows")
-            hf_status = "success"
-            hf_message = f"Uploaded to {repo_id} as 'entrepreneur_data.csv'"
-        else:
-            hf_status = "no_token"
-            hf_message = "Missing HUGGINGFACE_TOKEN secret"
+        hf_api.upload_file(
+            path_or_fileobj=csv_filename,
+            path_in_repo=csv_filename,
+            repo_id=repo_id,
+            repo_type="dataset",
+            commit_message=f"Appended {len(new_df)} new rows"
+        )
+        hf_status = "success"
+        hf_message = f"Uploaded to {repo_id} with {len(combined_df)} total rows"
     except Exception as e:
         hf_status = "error"
         hf_message = str(e)
 
     return jsonify({
         "status": "success",
-        "record_count": len(chat_data),
+        "record_count": len(combined_df),
         "huggingface_status": hf_status,
         "huggingface_message": hf_message
     })
+
 
 
 if __name__ == '__main__':
